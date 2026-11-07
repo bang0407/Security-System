@@ -1,0 +1,21 @@
+name: Release
+on:
+  push:
+    tags: ["v*"]
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - run: ./scripts/build.ps1
+        shell: pwsh
+      - run: python scripts/sign_rules.py
+        env:
+          HCPH_SIGNING_KEY: ${{ secrets.HCPH_SIGNING_KEY }}
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/**
